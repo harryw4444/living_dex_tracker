@@ -1,0 +1,417 @@
+<!DOCTYPE html>
+<html lang="en" data-theme="dark">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <title>Living Dex Tracker</title>
+    <link rel="icon" type="image/x-icon" href="favicon.ico">
+    <style>
+        :root {
+            --bg-color: #121212;
+            --panel-bg: #1e1e1e;
+            --panel-border: #2a2a2a;
+            --text-main: #ffffff;
+            --text-sub: #888888;
+            --card-uncaught-bg: #161616;
+            --card-uncaught-border: #222222;
+            --input-bg: #2a2a2a;
+            --input-border: #333333;
+            --btn-accent: #3b4cca;
+            --btn-accent-hover: #4b5dda;
+            --shadow-color: rgba(0, 0, 0, 0.3);
+        }
+
+        [data-theme="light"] {
+            --bg-color: #f4f5f7;
+            --panel-bg: #ffffff;
+            --panel-border: #e1e4e8;
+            --text-main: #1f2328;
+            --text-sub: #656d76;
+            --card-uncaught-bg: #eaeaea;
+            --card-uncaught-border: #d0d7de;
+            --input-bg: #f6f8fa;
+            --input-border: #d0d7de;
+            --btn-accent: #3b4cca;
+            --btn-accent-hover: #2b3caa;
+            --shadow-color: rgba(0, 0, 0, 0.08);
+        }
+
+        body {
+            font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif;
+            background: var(--bg-color);
+            color: var(--text-main);
+            margin: 0;
+            padding: 20px;
+            transition: background 0.25s ease, color 0.25s ease;
+        }
+
+        .top-bar {
+            display: grid;
+            grid-template-columns: auto 1fr 1fr auto;
+            align-items: center;
+            max-width: 1200px;
+            margin: 0 auto 25px auto;
+            padding: 12px 20px;
+            background: var(--panel-bg);
+            border: 1px solid var(--panel-border);
+            border-radius: 12px;
+            box-shadow: 0 4px 12px var(--shadow-color);
+            gap: 20px;
+        }
+
+        .col-theme { display: flex; align-items: center; }
+
+        .btn-theme {
+            background: var(--input-bg);
+            border: 1px solid var(--input-border);
+            color: var(--text-main);
+            padding: 8px 12px;
+            border-radius: 8px;
+            cursor: pointer;
+            font-size: 0.9rem;
+            font-weight: 600;
+            display: flex;
+            align-items: center;
+            gap: 6px;
+        }
+        .btn-theme:hover { border-color: var(--text-sub); }
+
+        .col-file { display: flex; align-items: center; gap: 12px; }
+
+        .btn-folder {
+            padding: 8px 16px;
+            border-radius: 8px;
+            border: none;
+            background: var(--btn-accent);
+            color: #fff;
+            font-size: 0.95rem;
+            font-weight: 600;
+            cursor: pointer;
+            transition: background 0.2s, transform 0.1s;
+            white-space: nowrap;
+        }
+        .btn-folder:hover { background: var(--btn-accent-hover); transform: translateY(-1px); }
+        .folder-label { color: var(--text-sub); font-size: 0.85rem; max-width: 180px; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+
+        .col-filters { display: flex; align-items: center; justify-content: center; gap: 10px; }
+
+        /* Custom Dropdown Styles */
+        .custom-select-wrapper {
+            position: relative;
+            user-select: none;
+            width: 160px;
+        }
+
+        .custom-select {
+            position: relative;
+            background: var(--input-bg);
+            border: 1px solid var(--input-border);
+            border-radius: 8px;
+            color: var(--text-main);
+            padding: 8px 12px;
+            font-size: 0.9rem;
+            cursor: pointer;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            transition: border-color 0.2s;
+        }
+        .custom-select:hover { border-color: var(--text-sub); }
+
+        .custom-options {
+            position: absolute;
+            top: 105%;
+            left: 0;
+            right: 0;
+            background: var(--panel-bg);
+            border: 1px solid var(--panel-border);
+            border-radius: 8px;
+            box-shadow: 0 4px 12px var(--shadow-color);
+            overflow: hidden;
+            display: none;
+            z-index: 100;
+        }
+
+        .custom-options.open { display: block; }
+
+        .custom-option {
+            padding: 9px 12px;
+            font-size: 0.9rem;
+            color: var(--text-main);
+            cursor: pointer;
+            transition: background 0.15s;
+        }
+        .custom-option:hover {
+            background: var(--input-bg);
+        }
+
+        .col-stats { font-size: 1.1rem; font-weight: 600; color: var(--text-sub); white-space: nowrap; text-align: right; }
+
+        @media (max-width: 850px) {
+            .top-bar { grid-template-columns: 1fr 1fr; gap: 15px; }
+            .col-filters { justify-content: flex-start; }
+            .col-stats { text-align: left; }
+        }
+
+        .grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fill, minmax(100px, 1fr));
+            gap: 15px;
+            max-width: 1200px;
+            margin: 0 auto;
+        }
+        .card {
+            background: var(--panel-bg);
+            border-radius: 12px;
+            padding: 10px;
+            text-align: center;
+            border: 1px solid var(--panel-border);
+            transition: transform 0.2s, border-color 0.2s;
+        }
+        .card:hover { transform: translateY(-3px); }
+        .card.caught { border-color: var(--panel-border); background: var(--panel-bg); }
+        .card.caught img { filter: none; opacity: 1; }
+        .card.uncaught { border-color: var(--card-uncaught-border); background: var(--card-uncaught-bg); }
+        .card.uncaught img { filter: grayscale(100%); opacity: 0.3; }
+        .card img { width: 72px; height: 72px; image-rendering: pixelated; }
+        .dex-num { font-size: 0.8rem; color: var(--text-sub); }
+    </style>
+</head>
+<body>
+
+    <div class="top-bar">
+        <div class="col-theme">
+            <button class="btn-theme" onclick="toggleTheme()" id="theme-toggle-btn">
+                <span id="theme-icon">🌙</span> <span id="theme-text">Dark</span>
+            </button>
+        </div>
+
+        <div class="col-file">
+            <button class="btn-folder" onclick="document.getElementById('folder-input').click()">Choose folder</button>
+            <input type="file" id="folder-input" webkitdirectory directory multiple style="display:none">
+            <span id="folder-name" class="folder-label">No folder chosen</span>
+        </div>
+
+        <div class="col-filters">
+            <!-- Custom Generation Filter -->
+            <div class="custom-select-wrapper" id="gen-wrapper">
+                <div class="custom-select" onclick="toggleDropdown('gen')">
+                    <span id="gen-selected-text">All Generations</span>
+                    <span>▼</span>
+                </div>
+                <div class="custom-options" id="gen-options">
+                    <div class="custom-option" onclick="selectGen('all', 'All Generations')">All Generations</div>
+                    <div class="custom-option" onclick="selectGen('1', 'Gen 1 (1-151)')">Gen 1 (1-151)</div>
+                    <div class="custom-option" onclick="selectGen('2', 'Gen 2 (152-251)')">Gen 2 (152-251)</div>
+                    <div class="custom-option" onclick="selectGen('3', 'Gen 3 (252-386)')">Gen 3 (252-386)</div>
+                    <div class="custom-option" onclick="selectGen('4', 'Gen 4 (387-493)')">Gen 4 (387-493)</div>
+                    <div class="custom-option" onclick="selectGen('5', 'Gen 5 (494-649)')">Gen 5 (494-649)</div>
+                    <div class="custom-option" onclick="selectGen('6', 'Gen 6 (650-721)')">Gen 6 (650-721)</div>
+                    <div class="custom-option" onclick="selectGen('7', 'Gen 7 (722-809)')">Gen 7 (722-809)</div>
+                    <div class="custom-option" onclick="selectGen('8', 'Gen 8 (810-905)')">Gen 8 (810-905)</div>
+                    <div class="custom-option" onclick="selectGen('9', 'Gen 9 (906-1025)')">Gen 9 (906-1025)</div>
+                </div>
+            </div>
+
+            <!-- Custom Status Filter -->
+            <div class="custom-select-wrapper" id="status-wrapper">
+                <div class="custom-select" onclick="toggleDropdown('status')">
+                    <span id="status-selected-text">All Pokémon</span>
+                    <span>▼</span>
+                </div>
+                <div class="custom-options" id="status-options">
+                    <div class="custom-option" onclick="selectStatus('all', 'All Pokémon')">All Pokémon</div>
+                    <div class="custom-option" onclick="selectStatus('caught', 'Caught Only')">Caught Only</div>
+                    <div class="custom-option" onclick="selectStatus('uncaught', 'Missing Only')">Missing Only</div>
+                </div>
+            </div>
+        </div>
+
+        <div class="col-stats">
+            <span id="caught-count" style="color: #4caf50;">0</span> / <span id="total-count">1025</span>
+        </div>
+    </div>
+
+    <div class="grid" id="dex-grid"></div>
+
+    <script>
+        let caughtSet = new Set();
+        let currentGen = 'all';
+        let currentStatus = 'all';
+
+        const genRanges = {
+            "1": [1, 151], "2": [152, 251], "3": [252, 386], "4": [387, 493],
+            "5": [494, 649], "6": [650, 721], "7": [722, 809], "8": [810, 905], "9": [906, 1025]
+        };
+
+        function toggleTheme() {
+            const htmlTag = document.documentElement;
+            const currentTheme = htmlTag.getAttribute('data-theme');
+            const newTheme = currentTheme === 'dark' ? 'light' : 'dark';
+
+            htmlTag.setAttribute('data-theme', newTheme);
+            document.getElementById('theme-icon').innerText = newTheme === 'dark' ? '🌙' : '☀️';
+            document.getElementById('theme-text').innerText = newTheme === 'dark' ? 'Dark' : 'Light';
+            localStorage.setItem('theme', newTheme);
+        }
+
+        (function initTheme() {
+            const savedTheme = localStorage.getItem('theme') || 'dark';
+            document.documentElement.setAttribute('data-theme', savedTheme);
+            document.getElementById('theme-icon').innerText = savedTheme === 'dark' ? '🌙' : '☀️';
+            document.getElementById('theme-text').innerText = savedTheme === 'dark' ? 'Dark' : 'Light';
+        })();
+
+        function toggleDropdown(type) {
+            const genOpts = document.getElementById('gen-options');
+            const statusOpts = document.getElementById('status-options');
+
+            if (type === 'gen') {
+                genOpts.classList.toggle('open');
+                statusOpts.classList.remove('open');
+            } else {
+                statusOpts.classList.toggle('open');
+                genOpts.classList.remove('open');
+            }
+        }
+
+        window.addEventListener('click', function(e) {
+            if (!e.target.closest('.custom-select-wrapper')) {
+                document.getElementById('gen-options').classList.remove('open');
+                document.getElementById('status-options').classList.remove('open');
+            }
+        });
+
+        function selectGen(val, label) {
+            currentGen = val;
+            document.getElementById('gen-selected-text').innerText = label;
+            document.getElementById('gen-options').classList.remove('open');
+            renderGrid();
+        }
+
+        function selectStatus(val, label) {
+            currentStatus = val;
+            document.getElementById('status-selected-text').innerText = label;
+            document.getElementById('status-options').classList.remove('open');
+            renderGrid();
+        }
+
+        // --- Browser-native folder picker (replaces the old Python/pywebview bridge) ---
+        const validExtensions = ['.pk1', '.pk2', '.pk3', '.pk4', '.pk5', '.pk6', '.pk7', '.pk8', '.pk9', '.pb8', '.bin', '.sav'];
+
+        document.getElementById('folder-input').addEventListener('change', async function(e) {
+            const files = Array.from(e.target.files || []);
+            if (files.length === 0) return;
+
+            caughtSet.clear();
+
+            // webkitdirectory gives each file a webkitRelativePath like "FolderName/sub/file.pk8"
+            const folderName = files[0].webkitRelativePath
+                ? files[0].webkitRelativePath.split('/')[0]
+                : 'Selected folder';
+            document.getElementById('folder-name').innerText = folderName;
+
+            const relevantFiles = files.filter(f => {
+                const lower = f.name.toLowerCase();
+                return validExtensions.some(ext => lower.endsWith(ext)) || lower === 'main';
+            });
+
+            await Promise.all(relevantFiles.map(readFileAsBuffer));
+            renderGrid();
+        });
+
+        function readFileAsBuffer(file) {
+            return new Promise((resolve) => {
+                const reader = new FileReader();
+                reader.onload = () => {
+                    processFileContent(file.name, reader.result);
+                    resolve();
+                };
+                reader.onerror = () => {
+                    console.error('Error reading file:', file.name);
+                    resolve();
+                };
+                reader.readAsArrayBuffer(file);
+            });
+        }
+
+        function processFileContent(name, bufferArray) {
+            const lowerName = name.toLowerCase();
+            const prefix = lowerName.split(' ')[0].split('-')[0].trim();
+
+            if (!isNaN(prefix) && prefix.length > 0) {
+                const parsed = parseInt(prefix, 10);
+                if (parsed >= 1 && parsed <= 1025) {
+                    caughtSet.add(parsed);
+                    return;
+                }
+            }
+
+            try {
+                const buffer = new Uint8Array(bufferArray);
+                if (lowerName.endsWith('.bin') || lowerName.endsWith('.sav') || lowerName === 'main') {
+                    parseBinaryBank(buffer);
+                } else if (lowerName.endsWith('.pk1') || lowerName.endsWith('.pk2')) {
+                    const dexId = buffer[0];
+                    if (dexId >= 1 && dexId <= 1025) caughtSet.add(dexId);
+                } else if (buffer.length >= 10) {
+                    const dexId = buffer[8] | (buffer[9] << 8);
+                    if (dexId >= 1 && dexId <= 1025) caughtSet.add(dexId);
+                }
+            } catch (err) {
+                console.error('Error parsing file:', name, err);
+            }
+        }
+
+        function parseBinaryBank(buffer) {
+            const SLOT_SIZE = 328;
+            const totalSlots = Math.floor(buffer.length / SLOT_SIZE);
+            for (let i = 0; i < totalSlots; i++) {
+                const offset = i * SLOT_SIZE;
+                const dexId = buffer[offset + 8] | (buffer[offset + 9] << 8);
+                if (dexId >= 1 && dexId <= 1025) {
+                    caughtSet.add(dexId);
+                }
+            }
+        }
+
+        function renderGrid() {
+            const grid = document.getElementById('dex-grid');
+            grid.innerHTML = '';
+
+            let start = 1, end = 1025;
+            if (currentGen !== 'all') {
+                [start, end] = genRanges[currentGen];
+            }
+
+            const totalInView = (end - start) + 1;
+            let caughtInView = 0;
+
+            for (let i = start; i <= end; i++) {
+                if (caughtSet.has(i)) caughtInView++;
+            }
+
+            document.getElementById('caught-count').innerText = caughtInView;
+            document.getElementById('total-count').innerText = totalInView;
+
+            for (let i = start; i <= end; i++) {
+                const isCaught = caughtSet.has(i);
+                if (currentStatus === 'caught' && !isCaught) continue;
+                if (currentStatus === 'uncaught' && isCaught) continue;
+
+                const card = document.createElement('div');
+                card.className = `card ${isCaught ? 'caught' : 'uncaught'}`;
+                const spriteUrl = `https://raw.githubusercontent.com/PokeAPI/sprites/master/sprites/pokemon/${i}.png`;
+
+                card.innerHTML = `
+                    <div class="dex-num">#${String(i).padStart(3, '0')}</div>
+                    <img src="${spriteUrl}" loading="lazy" alt="${i}">
+                `;
+                grid.appendChild(card);
+            }
+        }
+
+        renderGrid();
+    </script>
+</body>
+</html>
