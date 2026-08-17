@@ -12,5 +12,5 @@ A lightweight web application built to parse local Pokémon save files, PC banks
 
 ## Screenshots
 
-<img width="40%" alt="dark" src="" />
-<img width="40%" alt="light" src="" />
+<img width="40%" alt="dark" src="https://github.com/user-attachments/assets/4cb8e844-19e8-46f5-a530-3feab88dbaaa" />
+<img width="40%" alt="light" src="https://github.com/user-attachments/assets/592a4086-92ef-4e10-a870-3017a9c84178" />
