@@ -41,25 +41,47 @@
             background: var(--bg-color);
             color: var(--text-main);
             margin: 0;
-            padding: 20px;
+            padding: 12px;
             transition: background 0.25s ease, color 0.25s ease;
         }
 
+        @media (min-width: 700px) {
+            body { padding: 20px; }
+        }
+
+        * { box-sizing: border-box; }
+
         .top-bar {
-            display: grid;
-            grid-template-columns: auto 1fr 1fr auto;
-            align-items: center;
+            display: flex;
+            flex-direction: column;
             max-width: 1200px;
             margin: 0 auto 25px auto;
-            padding: 12px 20px;
+            padding: 14px;
             background: var(--panel-bg);
             border: 1px solid var(--panel-border);
             border-radius: 12px;
             box-shadow: 0 4px 12px var(--shadow-color);
-            gap: 20px;
+            gap: 14px;
         }
 
-        .col-theme { display: flex; align-items: center; }
+        /* Mobile-first: everything stacks full-width by default.
+           Once there's enough room, lay the bar out in a row. */
+        @media (min-width: 700px) {
+            .top-bar {
+                flex-direction: row;
+                flex-wrap: wrap;
+                align-items: center;
+                padding: 12px 20px;
+                gap: 16px 20px;
+            }
+            .col-theme  { order: 1; flex: 0 0 auto; }
+            .col-file   { order: 2; flex: 1 1 220px; }
+            .col-filters{ order: 3; flex: 1 1 320px; justify-content: center; }
+            .col-stats  { order: 4; flex: 0 0 auto; text-align: right; }
+        }
+
+        .col-theme { display: flex; align-items: center; justify-content: center; }
+        .col-theme, .col-file, .col-filters, .col-stats { min-width: 0; }
 
         .btn-theme {
             background: var(--input-bg);
@@ -76,7 +98,7 @@
         }
         .btn-theme:hover { border-color: var(--text-sub); }
 
-        .col-file { display: flex; align-items: center; gap: 12px; }
+        .col-file { display: flex; align-items: center; justify-content: center; gap: 12px; flex-wrap: wrap; }
 
         .btn-folder {
             padding: 8px 16px;
@@ -89,11 +111,22 @@
             cursor: pointer;
             transition: background 0.2s, transform 0.1s;
             white-space: nowrap;
+            flex-shrink: 0;
         }
         .btn-folder:hover { background: var(--btn-accent-hover); transform: translateY(-1px); }
-        .folder-label { color: var(--text-sub); font-size: 0.85rem; max-width: 180px; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+        .folder-label {
+            color: var(--text-sub);
+            font-size: 0.85rem;
+            max-width: 100%;
+            overflow: hidden;
+            text-overflow: ellipsis;
+            white-space: nowrap;
+        }
+        @media (min-width: 700px) {
+            .folder-label { max-width: 180px; }
+        }
 
-        .col-filters { display: flex; align-items: center; justify-content: center; gap: 10px; }
+        .col-filters { display: flex; align-items: center; justify-content: center; gap: 10px; flex-wrap: wrap; }
 
         /* Custom Dropdown Styles */
         .custom-select-wrapper {
@@ -145,12 +178,22 @@
             background: var(--input-bg);
         }
 
-        .col-stats { font-size: 1.1rem; font-weight: 600; color: var(--text-sub); white-space: nowrap; text-align: right; }
+        .col-stats {
+            font-size: 1.1rem;
+            font-weight: 600;
+            color: var(--text-sub);
+            white-space: nowrap;
+            text-align: center;
+        }
 
-        @media (max-width: 850px) {
-            .top-bar { grid-template-columns: 1fr 1fr; gap: 15px; }
-            .col-filters { justify-content: flex-start; }
-            .col-stats { text-align: left; }
+        .custom-select-wrapper { width: 100%; max-width: 220px; }
+        @media (min-width: 700px) {
+            .custom-select-wrapper { width: 160px; }
+        }
+
+        @media (max-width: 380px) {
+            .grid { grid-template-columns: repeat(auto-fill, minmax(80px, 1fr)); gap: 10px; }
+            .card img { width: 56px; height: 56px; }
         }
 
         .grid {
