@@ -2,6 +2,8 @@
 
 A lightweight web application built to parse local Pokémon save files, PC banks, and individual file exports to visualize Living Pokédex progress.
 
+The web application can be viewed and used [here](https://harryw4444.github.io/living_dex_tracker/)
+
 ## Key Features
 
 * Reads `.pk1`–`.pk9`, `.pb8`, `.bin`, `.sav`, and `main` files entirely in your browser.
